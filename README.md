@@ -2,7 +2,7 @@
 
 Python based code for analyzing, plotting, and sifting through cortical 
 multi-region multi-electrode recordings in Donald Katz's lab at Brandeis University. 
-Visit the Katz lab website at https://sites.google.com/a/brandeis.edu/katzlab/
+Visit the Katz lab website at [https://sites.google.com/a/brandeis.edu/katzlab/](https://katzlab.squarespace.com/)
 
 ### Sub-Projects  
 1. Gustatory and Olfactory Cortex Taste Coherence Analysis and Plotting
