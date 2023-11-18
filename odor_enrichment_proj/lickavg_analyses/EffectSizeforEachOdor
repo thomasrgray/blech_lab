@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Data for Carvone (Panel B)
+data_carvone_cis = {
+    'Pre_Carvone': [16.6, 13.6, 7, 11.3],
+    'Post_Carvone': [31.9, 20.7, 16.9, 27],
+    'Pre_Cis': [19.1, 20.7, 17.9, 25.4],
+    'Post_Cis': [23.8, 17.4, 13.8, 22],
+}
+
+# Data for Ethyl and Citral (Panel A)
+data_ethyl_citral = {
+    'Pre_Ethyl': [24.4, 8.2, 30.6],
+    'Post_Ethyl': [21.8, 12.6, 35.8],
+    'Pre_Citral': [19.7, 15.2, 5.8],
+    'Post_Citral': [17.7, 14.2, 12.16]
+}
+
+# Function to calculate Cohen's d
+def cohen_d(x1, x2):
+    mean_diff = np.mean(x2 - x1)
+    pooled_std = np.sqrt(((len(x1) - 1) * np.var(x1, ddof=1) + (len(x2) - 1) * np.var(x2, ddof=1)) / (len(x1) + len(x2) - 2))
+    return mean_diff / pooled_std
+
+# Calculate Cohen's d for each pre and post odor pair separately
+cohen_d_carvone = cohen_d(np.array(data_carvone_cis['Pre_Carvone']), np.array(data_carvone_cis['Post_Carvone']))
+cohen_d_cis = cohen_d(np.array(data_carvone_cis['Pre_Cis']), np.array(data_carvone_cis['Post_Cis']))
+cohen_d_ethyl = cohen_d(np.array(data_ethyl_citral['Pre_Ethyl']), np.array(data_ethyl_citral['Post_Ethyl']))
+cohen_d_citral = cohen_d(np.array(data_ethyl_citral['Pre_Citral']), np.array(data_ethyl_citral['Post_Citral']))
+
+# Plot the effect size (Cohen's d) for each pre and post odor pair
+odor_pairs = ['Carvone', 'Cis', 'Ethyl', 'Citral']
+effect_sizes = [cohen_d_carvone, cohen_d_cis, cohen_d_ethyl, cohen_d_citral]
+
+plt.figure(figsize=(8, 6))
+plt.bar(odor_pairs, effect_sizes, color='blue')
+plt.xlabel('Odor Pair')
+plt.ylabel('Effect Size (Cohen\'s d)')
+plt.title('Effect Size for Odor Preference Difference (Each Odor Pair)')
+plt.grid(True)
+plt.show()
+
+print("Cohen's d for each Odor Pair:")
+print(f"Carvone: {cohen_d_carvone}")
+print(f"Cis: {cohen_d_cis}")
+print(f"Ethyl: {cohen_d_ethyl}")
+print(f"Citral: {cohen_d_citral}")

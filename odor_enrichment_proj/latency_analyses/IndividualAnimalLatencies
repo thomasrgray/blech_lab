@@ -1,0 +1,70 @@
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+
+file_path = '/Users/thomasgray/Desktop/TGdata.txt'
+with open(file_path, 'r') as file:
+    content = file.read()
+
+open_parentheses_count = content.count('(')
+close_parentheses_count = content.count(')')
+
+if open_parentheses_count != close_parentheses_count:
+    print("Mismatch between open and close parentheses counts.")
+
+parentheses_ranges = []
+
+start = content.find('(')
+while start != -1:
+    end = content.find(')', start)
+    if end == -1:
+        break
+    parentheses_ranges.append((start, end))
+    start = content.find('(', end)
+
+data = []
+
+for i, (start, end) in enumerate(parentheses_ranges, start=1):
+    text_within_parentheses = content[start:end]
+    matches = re.findall(r'x\[(.*?)\]', text_within_parentheses)
+    latencies = [float(lat) for match in matches for lat in re.split(r',\s*|\s+', match) if lat.strip()]
+    latencies = [lat for lat in latencies if lat != 0]
+    
+    if len(latencies) != 0:
+        avg_latency = sum(latencies) / len(latencies)
+        data.append({'Set': i, 'Average Latency': avg_latency})
+
+df = pd.DataFrame(data)
+
+# Create separate bar graphs for each set of four latencies
+num_sets = len(df) // 4
+for i in range(num_sets):
+    start_index = i * 4
+    end_index = start_index + 4
+    set_data = df.iloc[start_index:end_index]
+    
+    pre_diffs = set_data.loc[set_data.index % 4 == 0, 'Average Latency'].tolist() + set_data.loc[set_data.index % 4 == 1, 'Average Latency'].tolist()
+    post_diffs = set_data.loc[set_data.index % 4 == 2, 'Average Latency'].tolist() + set_data.loc[set_data.index % 4 == 3, 'Average Latency'].tolist()
+
+    # Print the 28 values
+    print(f"Set {i+1} - Pre Diffs:", pre_diffs)
+    print(f"Set {i+1} - Post Diffs:", post_diffs)
+
+    # Create bar graphs
+    plt.figure()
+    x = range(len(pre_diffs))
+    width = 0.4
+    plt.bar(x, pre_diffs, width, label='Pre')
+    plt.bar([i + width for i in x], post_diffs, width, label='Post')
+
+    plt.xlabel('Animals')
+    plt.ylabel('Latency Difference')
+    plt.title(f'Latency Differences Set {i+1}')
+
+    # Set the tick locations and labels for the x-axis
+    tick_locations = [i + width/2 for i in x]
+    tick_labels = ['1st vs 2nd', '3rd vs 4th']
+    plt.xticks(tick_locations, tick_labels)
+
+    plt.legend()
+    plt.show()

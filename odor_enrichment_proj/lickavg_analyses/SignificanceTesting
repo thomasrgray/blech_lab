@@ -1,0 +1,113 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from statsmodels.stats.power import tt_ind_solve_power
+
+# Data for Carvone and Cis (Panel B)
+data_carvone_cis = {
+    'Pre_Carvone': [16.6, 13.6, 7, 11.3],
+    'Post_Carvone': [31.9, 20.7, 16.9, 27],
+    'Pre_Cis': [19.1, 20.7, 17.9, 25.4],
+    'Post_Cis': [23.8, 17.4, 13.8, 22],
+}
+
+# Data for Ethyl and Citral (Panel A)
+data_ethyl_citral = {
+    'Pre_Ethyl': [24.4, 8.2, 30.6],
+    'Post_Ethyl': [21.8, 12.6, 35.8],
+    'Pre_Citral': [19.7, 15.2, 5.8],
+    'Post_Citral': [17.7, 14.2, 12.16]
+}
+
+# Function to calculate Cohen's d
+def cohen_d(x1, x2):
+    mean_diff = np.mean(x2) - np.mean(x1)
+    pooled_std = np.sqrt(((len(x1) - 1) * np.var(x1, ddof=1) + (len(x2) - 1) * np.var(x2, ddof=1)) / (len(x1) + len(x2) - 2))
+    return mean_diff / pooled_std
+
+# Calculate Cohen's d for each individual odor separately
+cohen_d_carvone = cohen_d(np.array(data_carvone_cis['Pre_Carvone']), np.array(data_carvone_cis['Post_Carvone']))
+cohen_d_cis = cohen_d(np.array(data_carvone_cis['Pre_Cis']), np.array(data_carvone_cis['Post_Cis']))
+cohen_d_ethyl = cohen_d(np.array(data_ethyl_citral['Pre_Ethyl']), np.array(data_ethyl_citral['Post_Ethyl']))
+cohen_d_citral = cohen_d(np.array(data_ethyl_citral['Pre_Citral']), np.array(data_ethyl_citral['Post_Citral']))
+
+# Data for power analysis
+alpha = 0.05
+sample_size_carvone_cis = 4
+sample_size_ethyl_citral = 3
+
+# Perform power analysis for each individual odor separately
+power_carvone = tt_ind_solve_power(effect_size=cohen_d_carvone, nobs1=sample_size_carvone_cis, alpha=alpha, alternative='two-sided')
+power_cis = tt_ind_solve_power(effect_size=cohen_d_cis, nobs1=sample_size_carvone_cis, alpha=alpha, alternative='two-sided')
+power_ethyl = tt_ind_solve_power(effect_size=cohen_d_ethyl, nobs1=sample_size_ethyl_citral, alpha=alpha, alternative='two-sided')
+power_citral = tt_ind_solve_power(effect_size=cohen_d_citral, nobs1=sample_size_ethyl_citral, alpha=alpha, alternative='two-sided')
+
+# Calculate the required sample size for each individual odor to achieve a desired power of 0.80
+required_sample_size_carvone = tt_ind_solve_power(effect_size=cohen_d_carvone, power=0.80, alpha=alpha, alternative='two-sided', nobs1=None)
+required_sample_size_cis = tt_ind_solve_power(effect_size=cohen_d_cis, power=0.80, alpha=alpha, alternative='two-sided', nobs1=None)
+required_sample_size_ethyl = tt_ind_solve_power(effect_size=cohen_d_ethyl, power=0.80, alpha=alpha, alternative='two-sided', nobs1=None)
+required_sample_size_citral = tt_ind_solve_power(effect_size=cohen_d_citral, power=0.80, alpha=alpha, alternative='two-sided', nobs1=None)
+
+# Print results for each individual odor separately
+print("Carvone:")
+print(f"Cohen's d: {cohen_d_carvone:.2f}")
+print(f"Power: {power_carvone:.2f}")
+print(f"Required Sample Size: {required_sample_size_carvone:.0f}\n")
+
+print("Cis:")
+print(f"Cohen's d: {cohen_d_cis:.2f}")
+print(f"Power: {power_cis:.2f}")
+print(f"Required Sample Size: {required_sample_size_cis:.0f}\n")
+
+print("Ethyl:")
+print(f"Cohen's d: {cohen_d_ethyl:.2f}")
+print(f"Power: {power_ethyl:.2f}")
+print(f"Required Sample Size: {required_sample_size_ethyl:.0f}\n")
+
+print("Citral:")
+print(f"Cohen's d: {cohen_d_citral:.2f}")
+print(f"Power: {power_citral:.2f}")
+print(f"Required Sample Size: {required_sample_size_citral:.0f}")
+
+# Create the plot
+odor_labels = ['Carvone', 'Cis', 'Ethyl', 'Citral']
+cohen_d_values = [cohen_d_carvone, cohen_d_cis, cohen_d_ethyl, cohen_d_citral]
+power_values = [power_carvone, power_cis, power_ethyl, power_citral]
+required_sample_sizes = [required_sample_size_carvone, required_sample_size_cis, required_sample_size_ethyl, required_sample_size_citral]
+
+plt.figure(figsize=(14, 6))
+sns.set_context("talk", font_scale=1.1)
+
+# Plot Cohen's d values
+plt.subplot(1, 3, 1)
+plt.bar(odor_labels, cohen_d_values, color='blue')
+plt.axhline(y=0.0, color='black', linestyle='-')
+plt.xlabel('Odor')
+plt.ylabel("Cohen's d")
+plt.title("Effect Size for Each Odor")
+plt.ylim(-0.5, 2.5)
+
+# Plot Power values
+plt.subplot(1, 3, 2)
+plt.bar(odor_labels, power_values, color='green')
+plt.axhline(y=0.8, color='red', linestyle='--', label='Power Threshold (0.8)')
+plt.xlabel('Odor')
+plt.ylabel('Power')
+plt.title('Power for Each Odor')
+plt.ylim(0, 1)
+
+# Plot Required Sample Sizes
+plt.subplot(1, 3, 3)
+plt.bar(odor_labels, required_sample_sizes, color='orange')
+plt.xlabel('Odor')
+plt.ylabel('Required Sample Size')
+plt.title('Required Sample Size for Each Odor')
+plt.ylim(0, max(required_sample_sizes) + 50)
+
+# Adding dots and required sample size numbers
+for x, y in zip(odor_labels, required_sample_sizes):
+    plt.scatter([x] * int(y), np.arange(int(y)), s=50, color='black', alpha=0.7)
+    plt.text(x, y + 2, f'{int(y)}', ha='center', va='bottom', color='black', fontsize=10)
+
+plt.tight_layout()
+plt.show()

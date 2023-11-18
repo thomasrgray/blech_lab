@@ -1,0 +1,121 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import ranksums
+from statsmodels.stats.power import tt_ind_solve_power
+
+# Define the data for each animal
+data = {
+    'Pre_Carvone': [16.6, 13.6, 7, 11.3],
+    'Post_Carvone': [31.9, 20.7, 16.9, 27],
+    'Pre_Cis': [19.1, 20.7, 17.9, 25.4],
+    'Post_Cis': [23.8, 17.4, 13.8, 22],
+    'Pre_Ethyl': [24.4, 8.2, 30.6],
+    'Post_Ethyl': [21.8, 12.6, 35.8],
+    'Pre_Citral': [19.7, 15.2, 5.8],
+    'Post_Citral': [17.7, 14.2, 12.16]
+}
+
+# Create two DataFrames, one for Ethyl and Citral, and another for Carvone and Cis
+df_panel_a = pd.DataFrame({
+    'Pre_Ethyl': data['Pre_Ethyl'],
+    'Post_Ethyl': data['Post_Ethyl'],
+    'Pre_Citral': data['Pre_Citral'],
+    'Post_Citral': data['Post_Citral']
+})
+
+df_panel_b = pd.DataFrame({
+    'Pre_Carvone': data['Pre_Carvone'],
+    'Post_Carvone': data['Post_Carvone'],
+    'Pre_Cis': data['Pre_Cis'],
+    'Post_Cis': data['Post_Cis']
+})
+
+# Melt the DataFrames to long format
+melted_df_panel_a = pd.melt(df_panel_a, var_name='Odor', value_name='Average Licks')
+melted_df_panel_b = pd.melt(df_panel_b, var_name='Odor', value_name='Average Licks')
+
+# Separate the 'Pre' and 'Post' test conditions
+melted_df_panel_a['Test'] = melted_df_panel_a['Odor'].str.split('_').str[0]
+melted_df_panel_a['Odor'] = melted_df_panel_a['Odor'].str.split('_').str[1]
+
+melted_df_panel_b['Test'] = melted_df_panel_b['Odor'].str.split('_').str[0]
+melted_df_panel_b['Odor'] = melted_df_panel_b['Odor'].str.split('_').str[1]
+
+# Perform Mann-Whitney U tests to compare percent changes between different odor groups
+_, p_value_carvone_ethyl = ranksums(melted_df_panel_b[melted_df_panel_b['Odor'] == 'Carvone']['Average Licks'],
+                                    melted_df_panel_a[melted_df_panel_a['Odor'] == 'Ethyl']['Average Licks'])
+
+_, p_value_cis_citral = ranksums(melted_df_panel_b[melted_df_panel_b['Odor'] == 'Cis']['Average Licks'],
+                                 melted_df_panel_a[melted_df_panel_a['Odor'] == 'Citral']['Average Licks'])
+
+# Bonferroni correction for two comparisons
+alpha = 0.05
+bonferroni_correction_factor = 2  # Number of comparisons
+alpha_corrected = alpha / bonferroni_correction_factor
+
+# Calculate Cohen's d for each comparison
+cohens_d_carvone_ethyl = abs((melted_df_panel_b[melted_df_panel_b['Odor'] == 'Carvone']['Average Licks'].mean() -
+                              melted_df_panel_a[melted_df_panel_a['Odor'] == 'Ethyl']['Average Licks'].mean()) /
+                             ((melted_df_panel_b[melted_df_panel_b['Odor'] == 'Carvone']['Average Licks'].std() +
+                               melted_df_panel_a[melted_df_panel_a['Odor'] == 'Ethyl']['Average Licks'].std()) / 2))
+
+cohens_d_cis_citral = abs((melted_df_panel_b[melted_df_panel_b['Odor'] == 'Cis']['Average Licks'].mean() -
+                           melted_df_panel_a[melted_df_panel_a['Odor'] == 'Citral']['Average Licks'].mean()) /
+                          ((melted_df_panel_b[melted_df_panel_b['Odor'] == 'Cis']['Average Licks'].std() +
+                            melted_df_panel_a[melted_df_panel_a['Odor'] == 'Citral']['Average Licks'].std()) / 2))
+
+# Calculate power for each comparison
+sample_size_panel_b = len(melted_df_panel_b)
+sample_size_panel_a = len(melted_df_panel_a)
+
+power_carvone_ethyl = tt_ind_solve_power(effect_size=cohens_d_carvone_ethyl,
+                                          nobs1=sample_size_panel_b, alpha=alpha_corrected, alternative='two-sided')
+power_cis_citral = tt_ind_solve_power(effect_size=cohens_d_cis_citral,
+                                      nobs1=sample_size_panel_b, alpha=alpha_corrected, alternative='two-sided')
+
+# Calculate required sample size for achieving 80% power
+required_sample_size_carvone_ethyl = tt_ind_solve_power(effect_size=cohens_d_carvone_ethyl,
+                                                         power=0.80, alpha=alpha_corrected, alternative='two-sided')
+required_sample_size_cis_citral = tt_ind_solve_power(effect_size=cohens_d_cis_citral,
+                                                      power=0.80, alpha=alpha_corrected, alternative='two-sided')
+
+# Create the plot
+plt.figure(figsize=(18, 6))
+
+# Plot Mann-Whitney U test results and significance threshold
+plt.subplot(1, 3, 1)
+sns.barplot(x=['Carvone vs. Ethyl', 'Cis vs. Citral'],
+            y=[p_value_carvone_ethyl, p_value_cis_citral],
+            color='blue')
+plt.axhline(y=alpha_corrected, color='red', linestyle='--', label='Bonferroni Corrected Threshold')
+plt.xlabel('Enriched vs. Unenriched')
+plt.ylabel('p-value')
+plt.title('Mann-Whitney U Test Results')
+plt.xticks(rotation=45)
+plt.legend()
+
+# Plot Cohen's d values and power
+plt.subplot(1, 3, 2)
+plt.bar(['Carvone vs. Ethyl', 'Cis vs. Citral'], [cohens_d_carvone_ethyl, cohens_d_cis_citral], color='green')
+plt.xlabel('Enriched vs. Unenriched')
+plt.ylabel("Cohen's d")
+plt.title('Effect Size (Cohen\'s d) and Power')
+plt.xticks(rotation=45)
+
+# Adding power values to the plot
+for x, y in zip(['Carvone vs. Ethyl', 'Cis vs. Citral'], [power_carvone_ethyl, power_cis_citral]):
+    plt.text(x, 1.1 * y, f'Power = {y:.2f}', ha='center', color='black', fontsize=12)
+
+# Plot required sample sizes for 80% power
+plt.subplot(1, 3, 3)
+plt.bar(['Carvone vs. Ethyl', 'Cis vs. Citral'],
+        [required_sample_size_carvone_ethyl, required_sample_size_cis_citral],
+        color='orange')
+plt.xlabel('Enriched vs. Unenriched')
+plt.ylabel('Required Sample Size (n)')
+plt.title('Required Sample Size for 80% Power')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()

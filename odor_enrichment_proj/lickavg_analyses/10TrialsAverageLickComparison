@@ -1,0 +1,196 @@
+# -*- coding: utf-8 -*-
+"""
+Spyder Editor
+
+This is a temporary script file.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def split_data_into_parts(data):
+    part1 = data[:10]
+    part2 = data[10:20]
+    part3 = data[20:]
+    return part1, part2, part3
+
+def calculate_average(data):
+    avg_parts = []
+    for part in data:
+        avg = sum(part) / len(part)
+        avg_parts.append(avg)
+    return avg_parts
+
+def calculate_total_average(data):
+    total_avg = sum(data) / len(data)
+    return [total_avg] * 3
+
+def create_average_bar_graph():
+    trial_numbers = list(range(1, 31))
+
+    # Split data into parts for each animal
+    animal1_parts = split_data_into_parts(animal1_pre_citral) + split_data_into_parts(animal1_pre_ethyl) + split_data_into_parts(animal1_post_citral) + split_data_into_parts(animal1_post_ethyl)
+    animal2_parts = split_data_into_parts(animal2_pre_citral) + split_data_into_parts(animal2_pre_ethyl) + split_data_into_parts(animal2_post_citral) + split_data_into_parts(animal2_post_ethyl)
+    animal3_parts = split_data_into_parts(animal3_pre_citral) + split_data_into_parts(animal3_pre_ethyl) + split_data_into_parts(animal3_post_citral) + split_data_into_parts(animal3_post_ethyl)
+
+    # Calculate the average lick counts for each part
+    avg_parts1 = calculate_average(animal1_parts)
+    avg_parts2 = calculate_average(animal2_parts)
+    avg_parts3 = calculate_average(animal3_parts)
+
+    # Calculate the total average (averaging all the trials) for each condition
+    total_avg_pre_citral = calculate_total_average(animal1_pre_citral + animal2_pre_citral + animal3_pre_citral)
+    total_avg_pre_ethyl = calculate_total_average(animal1_pre_ethyl + animal2_pre_ethyl + animal3_pre_ethyl)
+    total_avg_post_citral = calculate_total_average(animal1_post_citral + animal2_post_citral + animal3_post_citral)
+    total_avg_post_ethyl = calculate_total_average(animal1_post_ethyl + animal2_post_ethyl + animal3_post_ethyl)
+
+    # Create a list with 16 bars for each subpart (including the total average section)
+    pre_citral_avgs = [avg_parts1[0], avg_parts2[0], avg_parts3[0], total_avg_pre_citral[0]]
+    pre_ethyl_avgs = [avg_parts1[1], avg_parts2[1], avg_parts3[1], total_avg_pre_ethyl[0]]
+    post_citral_avgs = [avg_parts1[2], avg_parts2[2], avg_parts3[2], total_avg_post_citral[0]]
+    post_ethyl_avgs = [avg_parts1[3], avg_parts2[3], avg_parts3[3], total_avg_post_ethyl[0]]
+
+    # Set the positions of the bars on the x-axis
+    x = list(range(len(pre_citral_avgs)))
+
+    # Set the width of the bars
+    width = 0.2
+
+    # Plot the bars
+    plt.bar(x, pre_citral_avgs, width, label='Pre - Citral', color='blue')
+    plt.bar([i + width for i in x], post_citral_avgs, width, label='Post - Citral', color='lightblue')
+    plt.bar([i + 2 * width for i in x], pre_ethyl_avgs, width, label='Pre - Ethyl', color='red')
+    plt.bar([i + 3 * width for i in x], post_ethyl_avgs, width, label='Post - Ethyl', color='lightcoral')
+
+    # Add labels, title, and legend
+    plt.xlabel('Trials')
+    plt.ylabel('Average Number of Licks')
+    plt.title('Average Lick Counts for All Animals')
+    plt.xticks([i + 1.5 * width for i in x], ['Trials 1-10', 'Trials 11-20', 'Trials 21-30', 'Total Average'])
+    plt.legend()
+
+    plt.show()
+
+animal2_pre_citral = [36,36,39,40,41,41,40,37,36,37,19,0,30,2,29,0,16,0,0,27,1,0,0,26,2,39,0,17,0,0]
+animal2_pre_ethyl = [6,1,29,39,39,41,40,41,41,39,33,40,37,31,33,0,35,0,0,0,37,35,35,0,0,38,29,0,33,0]
+animal2_post_citral = [38,38,38,40,39,39,38,40,21,29,0,16,3,0,0,0,0,0,37,0,0,0,28,0,29,38,0,21,0,0]
+animal2_post_ethyl = [38,35,37,37,37,39,38,39,36,36,37,39,33,3,35,0,0,0,0,0,0,0,0,6,37,35,0,0,38,0]
+
+animal1_pre_citral = [0,0,37,7,19,14,15,11,19,10,0,0,22,7,15,8,11,34,16,29,17,16,0,20,20,7,25,14,31,32]
+animal1_pre_ethyl = [0,0,4,1,7,11,4,7,22,7,5,0,4,14,15,19,14,8,2,0,17,4,7,2,20,0,5,39,8,0]
+animal1_post_citral = [36,33,28,36,7,25,31,30,28,9,17,35,0,0,13,21,0,0,0,0,0,0,38,0,0,0,41,0,0,0]
+animal1_post_ethyl = [0,34,37,9,5,27,19,25,13,6,17,29,17,13,28,16,18,0,16,0,0,0,0,40,0,10,0,0,0,0]
+
+animal3_pre_citral = [8,0,0,21,16,9,19,0,14,13,7,15,11,3,18,5,2,1,8,2,0,0,1,1,0,0,0,0,0,0]
+animal3_pre_ethyl = [0,0,17,0,18,26,37,39,37,40,40,42,43,43,40,42,43,43,43,43,43,42,41,0,32,40,0,40,41,4]
+animal3_post_citral = [43,43,43,43,38,42,38,29,9,24,2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,7,1,0,0]
+animal3_post_ethyl = [41,37,42,41,39,39,43,19,42,41,39,38,44,44,37,41,42,0,42,39,42,0,43,36,42,42,37,41,42,0]
+
+# Creating the filtered average bar graph for all three animals
+create_average_bar_graph()
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def split_data_into_parts(data):
+    part1 = data[:10]
+    part2 = data[10:20]
+    part3 = data[20:]
+    return part1, part2, part3
+
+def calculate_average(data):
+    avg_parts = []
+    for part in data:
+        avg = sum(part) / len(part)
+        avg_parts.append(avg)
+    return avg_parts
+
+def calculate_total_average(data):
+    total_avg = sum(data) / len(data)
+    return [total_avg] * 3
+
+def create_average_bar_graph():
+    trial_numbers = list(range(1, 31))
+
+    # Split data into parts for each animal
+    animal29_parts = split_data_into_parts(animal29_pre_cis) + split_data_into_parts(animal29_pre_carvone) + split_data_into_parts(animal29_post_cis) + split_data_into_parts(animal29_post_carvone)
+    animal30_parts = split_data_into_parts(animal30_pre_cis) + split_data_into_parts(animal30_pre_carvone) + split_data_into_parts(animal30_post_cis) + split_data_into_parts(animal30_post_carvone)
+    animal31_parts = split_data_into_parts(animal31_pre_cis) + split_data_into_parts(animal31_pre_carvone) + split_data_into_parts(animal31_post_cis) + split_data_into_parts(animal31_post_carvone)
+
+    # Calculate the average lick counts for each part
+    avg_parts1 = calculate_average(animal29_parts)
+    avg_parts2 = calculate_average(animal30_parts)
+    avg_parts3 = calculate_average(animal31_parts)
+
+    # Calculate the total average (averaging all the trials) for each condition
+    total_avg_pre_cis = calculate_total_average(animal29_pre_cis + animal30_pre_cis + animal31_pre_cis)
+    total_avg_pre_carvone = calculate_total_average(animal29_pre_carvone + animal30_pre_carvone + animal31_pre_carvone)
+    total_avg_post_cis = calculate_total_average(animal29_post_cis + animal30_post_cis + animal31_post_cis)
+    total_avg_post_carvone = calculate_total_average(animal29_post_carvone + animal30_post_carvone + animal31_post_carvone)
+
+    # Create a list with 16 bars for each subpart (including the total average section)
+    pre_cis_avgs = [avg_parts1[0], avg_parts2[0], avg_parts3[0], total_avg_pre_cis[0]]
+    pre_carvone_avgs = [avg_parts1[1], avg_parts2[1], avg_parts3[1], total_avg_pre_carvone[0]]
+    post_cis_avgs = [avg_parts1[2], avg_parts2[2], avg_parts3[2], total_avg_post_cis[0]]
+    post_carvone_avgs = [avg_parts1[3], avg_parts2[3], avg_parts3[3], total_avg_post_carvone[0]]
+
+    # Set the positions of the bars on the x-axis
+    x = list(range(len(pre_cis_avgs)))
+
+    # Set the width of the bars
+    width = 0.2
+
+    # Plot the bars
+    plt.bar(x, pre_cis_avgs, width, label='Pre - Cis', color='blue')
+    plt.bar([i + width for i in x], post_cis_avgs, width, label='Post - Cis', color='lightblue')
+    plt.bar([i + 2 * width for i in x], pre_carvone_avgs, width, label='Pre - Carvone', color='red')
+    plt.bar([i + 3 * width for i in x], post_carvone_avgs, width, label='Post - Carvone', color='lightcoral')
+
+    # Add labels, title, and legend
+    plt.xlabel('Trials')
+    plt.ylabel('Average Number of Licks')
+    plt.title('Average Lick Counts for All Animals')
+    plt.xticks([i + 1.5 * width for i in x], ['Trials 1-10', 'Trials 11-20', 'Trials 21-30', 'Total Average'])
+    plt.legend()
+    
+    plt.ylim(0, 40)
+    plt.yticks(np.arange(0, 41, 5))
+
+
+    plt.show()
+
+animal29_pre_carvone = [2,	3,	35,	12,	40,	6,	40,	2,	4,	40,	38,	7,	39,	3,	5,	34,	39,	0,	0,	0,	3,	0,	1,	42,	0,	39,	22,	0,	40,	2]
+animal29_pre_cis = [33,	33,	36,	37,	39,	37,	38,	38,	28,	0,	30,	25,	11,	17,	25,	17,	0,	39,	0,	0,	0,	0,	0,	0,	34,	0,	0,	21,	0,	36]
+animal29_post_carvone = [45,	43,	43,	43,	43,	43,	43,	42,	42,	41,	36,	40,	32,	29,	39,	32,	38,	0,	12,	38,	40,	37,	25,	40,	0,	38,	0,	39,	16,	0]
+animal29_post_cis = [43,	42,	41,	43,	43,	43,	42,	42,	31,	6,	18,	5,	24,	16,	18,	0,	36,	0,	42,	25,	3,	0,	42,	32,	1,	0,	0,	37,	32,	7]
+
+animal30_pre_carvone = [1,	0,	17,	5,	25,	8,	0,	2,	13,	39,	40,	4,	34,	9,	2,	40,	37,	23,	0,	5,	0,	1,	0,	39,	6,	14,	40,	5,	0,	0]
+animal30_pre_cis = [6,	31,	28,	9,	36,	0,	0,	32,	0,	26,	1,	36,	34,	36,	37,	36,	37,	37,	36,	0,	31,	0,	0,	38,	0,	30,	39,	25,	0,	0]
+animal30_post_carvone = [5,	1,	31,	36,	36,	34,	36,	38,	22,	0,	38,	37,	38,	0,	0,	0,	0,	38,	27,	34,	0,	0,	33,	37,	0,	38,	30,	34,	0,	0]
+animal30_post_cis = [24,	34,	33,	37,	2,	2,	35,	34,	18,	37,	36,	35,	30,	3,	7,	37,	39,	27,	3,	24,	0,	0,	0,	3,	39,	0,	0,	3,	0,	0,	0]
+
+animal31_pre_carvone = [5,	4,	28,	20,	0,	6,	41,	14,	13,	40,	11,	2,	1,	0,	2,	0,	21,	0,	0,	0,	1,	0,	0,	0,	0,	1,	0,	0,	0,	0]
+animal31_pre_cis = [38,	38,	37,	29,	38,	37,	38,	37,	0,	27,	38,	39,	0,	0,	4,	40,	0,	0,	0,	0,	0,	41,	6,	0,	0,	0,	12,	39,	0,	0]
+animal31_post_carvone = [37,	37,	34,	38,	38,	38,	39,	36,	38,	0,	7,	0,	0,	20,	6,	10,	0,	35,	1,	0,	0,	0,	7,	2,	0,	36,	15,	0,	0,	33]
+animal31_post_cis = [36, 36, 37,	36,	40,	6,	9,	1,	32,	35,	12,	29,	0,	0,	0,	0,	0,	0,	9,	41,	36,	2,	0,	0,	0,	0,	0,	5,	0,	0]
+
+animal2_pre_citral = [36,36,39,40,41,41,40,37,36,37,19,0,30,2,29,0,16,0,0,27,1,0,0,26,2,39,0,17,0,0]
+animal2_pre_ethyl = [6,1,29,39,39,41,40,41,41,39,33,40,37,31,33,0,35,0,0,0,37,35,35,0,0,38,29,0,33,0]
+animal2_post_citral = [38,38,38,40,39,39,38,40,21,29,0,16,3,0,0,0,0,0,37,0,0,0,28,0,29,38,0,21,0,0]
+animal2_post_ethyl = [38,35,37,37,37,39,38,39,36,36,37,39,33,3,35,0,0,0,0,0,0,0,0,6,37,35,0,0,38,0]
+
+animal1_pre_citral = [0,0,37,7,19,14,15,11,19,10,0,0,22,7,15,8,11,34,16,29,17,16,0,20,20,7,25,14,31,32]
+animal1_pre_ethyl = [0,0,4,1,7,11,4,7,22,7,5,0,4,14,15,19,14,8,2,0,17,4,7,2,20,0,5,39,8,0]
+animal1_post_citral = [36,33,28,36,7,25,31,30,28,9,17,35,0,0,13,21,0,0,0,0,0,0,38,0,0,0,41,0,0,0]
+animal1_post_ethyl = [0,34,37,9,5,27,19,25,13,6,17,29,17,13,28,16,18,0,16,0,0,0,0,40,0,10,0,0,0,0]
+
+animal3_pre_citral = [8,0,0,21,16,9,19,0,14,13,7,15,11,3,18,5,2,1,8,2,0,0,1,1,0,0,0,0,0,0]
+animal3_pre_ethyl = [0,0,17,0,18,26,37,39,37,40,40,42,43,43,40,42,43,43,43,43,43,42,41,0,32,40,0,40,41,4]
+animal3_post_citral = [43,43,43,43,38,42,38,29,9,24,2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,7,1,0,0]
+animal3_post_ethyl = [41,37,42,41,39,39,43,19,42,41,39,38,44,44,37,41,42,0,42,39,42,0,43,36,42,42,37,41,42,0]
+
+# Creating the filtered average bar graph for all three animals
+create_average_bar_graph()

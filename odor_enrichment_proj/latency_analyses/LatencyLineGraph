@@ -1,0 +1,85 @@
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+file_path = '/home/thomas/Downloads/TGdata.txt'
+with open(file_path, 'r') as file:
+    content = file.read()
+
+open_parentheses_count = content.count('(')
+close_parentheses_count = content.count(')')
+
+if open_parentheses_count != close_parentheses_count:
+    print("Mismatch between open and close parentheses counts.")
+
+parentheses_ranges = []
+
+start = content.find('(')
+while start != -1:
+    end = content.find(')', start)
+    if end == -1:
+        break
+    parentheses_ranges.append((start, end))
+    start = content.find('(', end)
+
+data = []
+
+for i, (start, end) in enumerate(parentheses_ranges, start=1):
+    text_within_parentheses = content[start:end]
+    matches = re.findall(r'x\[(.*?)\]', text_within_parentheses)
+    latencies = [float(lat) for match in matches for lat in re.split(r',\s*|\s+', match) if lat.strip()]
+    latencies = [lat for lat in latencies if lat != 0]
+    
+    if len(latencies) != 0:
+        avg_latency = sum(latencies) / len(latencies)
+        data.append({'Set': i, 'Average Latency': avg_latency})
+
+df = pd.DataFrame(data)
+
+# Create separate bar graphs for each set of four latencies
+num_sets = len(df) // 4
+
+# Create subplots with 2 panels
+fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+# First three sets
+first_three_pre = []
+first_three_post = []
+for i in range(3):
+    start_index = i * 4
+    end_index = start_index + 4
+    set_data = df.iloc[start_index:end_index]
+    first_three_pre.extend(set_data.loc[set_data.index % 4 == 0, 'Average Latency'])
+    first_three_post.extend(set_data.loc[set_data.index % 4 == 2, 'Average Latency'])
+
+# Last four sets
+last_four_pre = []
+last_four_post = []
+for i in range(num_sets - 4, num_sets):
+    start_index = i * 4
+    end_index = start_index + 4
+    set_data = df.iloc[start_index:end_index]
+    last_four_pre.extend(set_data.loc[set_data.index % 4 == 0, 'Average Latency'])
+    last_four_post.extend(set_data.loc[set_data.index % 4 == 2, 'Average Latency'])
+
+# Panel 1: First three sets
+sns.stripplot(data=[first_three_pre, first_three_post], ax=axes[0], jitter=True, color='black', alpha=0.5)
+sns.pointplot(x=['Pre', 'Post'], y=[sum(first_three_pre) / len(first_three_pre), sum(first_three_post) / len(first_three_post)], ax=axes[0], markers='o')
+
+axes[0].set_xlabel('Condition')
+axes[0].set_ylabel('Average Latency')
+axes[0].set_title('First Three Sets')
+axes[0].legend(['Individual Diffs', 'Average Diffs'])
+
+# Panel 2: Last four sets
+sns.stripplot(data=[last_four_pre, last_four_post], ax=axes[1], jitter=True, color='black', alpha=0.5)
+sns.pointplot(x=['Pre', 'Post'], y=[sum(last_four_pre) / len(last_four_pre), sum(last_four_post) / len(last_four_post)], ax=axes[1], markers='o')
+
+axes[1].set_xlabel('Condition')
+axes[1].set_ylabel('Average Latency')
+axes[1].set_title('Last Four Sets')
+axes[1].legend(['Individual Diffs', 'Average Diffs'])
+
+plt.tight_layout()
+plt.show()

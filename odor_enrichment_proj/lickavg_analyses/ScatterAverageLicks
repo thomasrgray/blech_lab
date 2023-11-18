@@ -1,0 +1,71 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Data for Carvone and Cis (Panel B)
+data_carvone_cis = {
+    'Pre_Carvone': [16.6, 13.6, 7, 11.3],
+    'Post_Carvone': [31.9, 20.7, 16.9, 27],
+    'Pre_Cis': [19.1, 20.7, 17.9, 25.4],
+    'Post_Cis': [23.8, 17.4, 13.8, 22],
+}
+
+# Data for Ethyl and Citral (Panel A)
+data_ethyl_citral = {
+    'Pre_Ethyl': [24.4, 8.2, 30.6],
+    'Post_Ethyl': [21.8, 12.6, 35.8],
+    'Pre_Citral': [19.7, 15.2, 5.8],
+    'Post_Citral': [17.7, 14.2, 12.16]
+}
+
+# Create separate DataFrames for Carvone and Cis, and Ethyl and Citral
+df_carvone_cis = pd.DataFrame(data_carvone_cis)
+df_ethyl_citral = pd.DataFrame(data_ethyl_citral)
+
+# Calculate the percent increase in preference for each animal and each odor for Carvone and Cis
+for odor in ['Carvone', 'Cis']:
+    df_carvone_cis[f'Percent_Increase_{odor}'] = (df_carvone_cis[f'Post_{odor}'] - df_carvone_cis[f'Pre_{odor}']) / df_carvone_cis[f'Pre_{odor}'] * 100
+
+# Calculate the percent increase in preference for each animal and each odor for Ethyl and Citral
+for odor in ['Ethyl', 'Citral']:
+    df_ethyl_citral[f'Percent_Increase_{odor}'] = (df_ethyl_citral[f'Post_{odor}'] - df_ethyl_citral[f'Pre_{odor}']) / df_ethyl_citral[f'Pre_{odor}'] * 100
+
+# Increase font size for better visibility on poster
+plt.rc('font', size=18, weight='bold')
+
+# Create scatter plots for Carvone and Cis (Panel B)
+fig, axes = plt.subplots(2, 2, figsize=(16, 14))
+
+# Scatter plots for Carvone and Cis
+sns.scatterplot(x='Pre_Carvone', y='Post_Carvone', data=df_carvone_cis, ax=axes[0, 0], label='Paired', color='green')
+sns.scatterplot(x='Pre_Cis', y='Post_Cis', data=df_carvone_cis, ax=axes[0, 1], label='Unpaired', color='blue')
+
+# Scatter plots for Ethyl and Citral
+sns.scatterplot(x='Pre_Ethyl', y='Post_Ethyl', data=df_ethyl_citral, ax=axes[1, 0], label='Paired', color='green')
+sns.scatterplot(x='Pre_Citral', y='Post_Citral', data=df_ethyl_citral, ax=axes[1, 1], label='Unpaired', color='blue')
+
+# Plot red dots with "x" inside for the average of each series
+axes[0, 0].plot(df_carvone_cis['Pre_Carvone'].mean(), df_carvone_cis['Post_Carvone'].mean(), 'rx', markersize=10)
+axes[0, 1].plot(df_carvone_cis['Pre_Cis'].mean(), df_carvone_cis['Post_Cis'].mean(), 'rx', markersize=10)
+axes[1, 0].plot(df_ethyl_citral['Pre_Ethyl'].mean(), df_ethyl_citral['Post_Ethyl'].mean(), 'rx', markersize=10)
+axes[1, 1].plot(df_ethyl_citral['Pre_Citral'].mean(), df_ethyl_citral['Post_Citral'].mean(), 'rx', markersize=10)
+
+# Set titles with bolded first letters
+axes[0, 0].set_title(r'$\bf{Average\ Licks\ for\ Enriched\ Paired\ Odor}$')
+axes[0, 1].set_title(r'$\bf{Average\ Licks\ for\ Enriched\ Unpaired\ Odor}$')
+axes[1, 0].set_title(r'$\bf{Average\ Licks\ for\ Unenriched\ Paired\ Odor}$')
+axes[1, 1].set_title(r'$\bf{Average\ Licks\ for\ Unenriched\ Unpaired\ Odor}$')
+
+# Set axis labels
+for row in axes:
+    for ax in row:
+        ax.set_ylabel('Post')
+        ax.set_xlabel('Pre')
+        ax.plot([0, 50], [0, 50], color='gray', linestyle='--', label='Threshold (Post = Pre)')
+        ax.legend()
+
+# Adjust the layout to avoid overlapping text
+plt.tight_layout()
+
+# Show the scatter plots
+plt.show()

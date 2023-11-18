@@ -1,0 +1,202 @@
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+
+file_path = '/Users/thomasgray/Desktop/TGdata.txt'
+with open(file_path, 'r') as file:
+    content = file.read()
+
+open_parentheses_count = content.count('(')
+close_parentheses_count = content.count(')')
+
+if open_parentheses_count != close_parentheses_count:
+    print("Mismatch between open and close parentheses counts.")
+
+parentheses_ranges = []
+
+start = content.find('(')
+while start != -1:
+    end = content.find(')', start)
+    if end == -1:
+        break
+    parentheses_ranges.append((start, end))
+    start = content.find('(', end)
+
+data = []
+
+for i, (start, end) in enumerate(parentheses_ranges, start=1):
+    text_within_parentheses = content[start:end]
+    matches = re.findall(r'x\[(.*?)\]', text_within_parentheses)
+    latencies = [float(lat) for match in matches for lat in re.split(r',\s*|\s+', match) if lat.strip()]
+    latencies = [lat for lat in latencies if lat != 0 and lat <= 0.4]
+
+    cluster_sizes = []
+    current_cluster_size = 0
+
+    for lat in latencies:
+        if lat > 0:
+            current_cluster_size += 1
+        elif lat == 0 or lat > 0.4:
+            if current_cluster_size > 0:
+                cluster_sizes.append(current_cluster_size)
+            current_cluster_size = 0
+
+    if current_cluster_size > 0:
+        cluster_sizes.append(current_cluster_size)
+
+    avg_cluster_size_per_row = [cluster_size for cluster_size in cluster_sizes]
+
+    avg_cluster_size = sum(cluster_sizes) / len(cluster_sizes) if len(cluster_sizes) > 0 else 0
+
+    avg_latency = sum(latencies) / len(latencies) if len(latencies) > 0 else 0
+
+    data.append({'Set': i, 'Cluster Size Per Row': avg_cluster_size_per_row, 'Average Cluster Size': avg_cluster_size, 'Average Latency': avg_latency})
+
+df = pd.DataFrame(data)
+
+# Separate the data into two groups: first three sets and last four sets
+first_three_sets = df[df['Set'].isin(range(1, 13))]
+last_four_sets = df[df['Set'].isin(range(13, 29))]
+
+# Print the DataFrame with all columns
+pd.set_option('display.max_columns', None)
+print(first_three_sets)
+print(last_four_sets)
+
+pd.set_option('display.max_columns', None)
+
+df = pd.DataFrame(data)
+
+print(df)
+
+
+# Separate the data into two groups: first three sets and last four sets
+first_three_sets = df[df['Set'].isin(range(1, 13))]
+last_four_sets = df[df['Set'].isin(range(13, 29))]
+
+# ... (rest of your code)
+#-----------------------------------------
+
+
+
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+
+file_path = '/Users/thomasgray/Desktop/TGdata.txt'
+with open(file_path, 'r') as file:
+    content = file.read()
+
+open_parentheses_count = content.count('(')
+close_parentheses_count = content.count(')')
+
+if open_parentheses_count != close_parentheses_count:
+    print("Mismatch between open and close parentheses counts.")
+
+parentheses_ranges = []
+
+start = content.find('(')
+while start != -1:
+    end = content.find(')', start)
+    if end == -1:
+        break
+    parentheses_ranges.append((start, end))
+    start = content.find('(', end)
+
+data = []
+
+for i, (start, end) in enumerate(parentheses_ranges, start=1):
+    text_within_parentheses = content[start:end]
+    matches = re.findall(r'x\[(.*?)\]', text_within_parentheses)
+    latencies = [float(lat) for match in matches for lat in re.split(r',\s*|\s+', match) if lat.strip()]
+    latencies = [lat for lat in latencies if 0 < lat <= 0.4]  # Filter out values over 0.4
+    
+    if len(latencies) != 0:
+        avg_latency = sum(latencies) / len(latencies)
+        data.append({'Set': i, 'Average Latency': avg_latency})
+
+df = pd.DataFrame(data)
+
+# Separate the data into two groups: first three sets and last four sets
+first_three_sets = df.iloc[:12]
+last_four_sets = df.iloc[12:]
+
+# Calculate average latencies for pre and post conditions
+pre_ethyl_avg = last_four_sets[last_four_sets['Set'].isin([1, 5, 9])]['Average Latency'].mean()
+post_ethyl_avg = last_four_sets[last_four_sets['Set'].isin([2, 6, 10])]['Average Latency'].mean()
+
+pre_citral_avg = last_four_sets[last_four_sets['Set'].isin([3, 7, 11])]['Average Latency'].mean()
+post_citral_avg = last_four_sets[last_four_sets['Set'].isin([4, 8, 12])]['Average Latency'].mean()
+
+pre_carvone_avg = last_four_sets[last_four_sets['Set'].isin([13, 17, 21, 25])]['Average Latency'].mean()
+post_carvone_avg = last_four_sets[last_four_sets['Set'].isin([14, 18, 22, 26])]['Average Latency'].mean()
+
+pre_cis_avg = last_four_sets[last_four_sets['Set'].isin([15, 19, 23, 27])]['Average Latency'].mean()
+post_cis_avg = last_four_sets[last_four_sets['Set'].isin([16, 20, 24, 28])]['Average Latency'].mean()
+
+# Create bar plots
+labels = ['Pre Ethyl', 'Post Ethyl', 'Pre Citral', 'Post Citral', 'Pre Carvone', 'Post Carvone', 'Pre Cis', 'Post Cis']
+x = range(len(labels))
+width = 0.4
+
+fig, ax = plt.subplots()
+
+# Plot pre and post latencies for different conditions
+pre_latencies = [pre_ethyl_avg, post_ethyl_avg, pre_citral_avg, post_citral_avg,
+                 pre_carvone_avg, post_carvone_avg, pre_cis_avg, post_cis_avg]
+post_latencies = [0] * len(labels)
+
+ax.bar(x, pre_latencies, width, label='Pre')
+ax.bar([i + width for i in x], post_latencies, width, label='Post')
+
+ax.set_xlabel('Condition')
+ax.set_ylabel('Average Latency')
+ax.set_title('Average Latencies for Different Conditions')
+ax.set_xticks([i + width/2 for i in x])
+ax.set_xticklabels(labels, rotation=45, ha='right')
+
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# Calculate average latencies for pre and post conditions
+first_three_pre_ethyl_avg = first_three_sets[first_three_sets['Set'] % 4 == 1]['Average Latency'].mean()
+first_three_post_ethyl_avg = first_three_sets[first_three_sets['Set'] % 4 == 2]['Average Latency'].mean()
+first_three_pre_citral_avg = first_three_sets[first_three_sets['Set'] % 4 == 3]['Average Latency'].mean()
+first_three_post_citral_avg = first_three_sets[first_three_sets['Set'] % 4 == 0]['Average Latency'].mean()
+
+last_four_pre_ethyl_avg = last_four_sets[last_four_sets['Set'] % 4 == 1]['Average Latency'].mean()
+last_four_post_ethyl_avg = last_four_sets[last_four_sets['Set'] % 4 == 2]['Average Latency'].mean()
+last_four_pre_citral_avg = last_four_sets[last_four_sets['Set'] % 4 == 3]['Average Latency'].mean()
+last_four_post_citral_avg = last_four_sets[last_four_sets['Set'] % 4 == 0]['Average Latency'].mean()
+
+print(first_three_pre_ethyl_avg,
+first_three_post_ethyl_avg, 
+first_three_pre_citral_avg,
+first_three_post_citral_avg)
+
+# Create bar plots
+labels = ['Pre Ethyl', 'Post Ethyl', 'Pre Citral', 'Post Citral']
+x = range(len(labels))
+width = 0.4
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+# First plot for the first three sets
+ax1.bar(x, [first_three_pre_ethyl_avg, first_three_post_ethyl_avg, first_three_pre_citral_avg, first_three_post_citral_avg], width)
+ax1.set_xlabel('Condition')
+ax1.set_ylabel('Average Latency')
+ax1.set_title('Average Latencies for First Three Sets')
+ax1.set_xticks(x)
+ax1.set_xticklabels(labels)
+
+# Second plot for the last four sets
+ax2.bar(x, [last_four_pre_ethyl_avg, last_four_post_ethyl_avg, last_four_pre_citral_avg, last_four_post_citral_avg], width)
+ax2.set_xlabel('Condition')
+ax2.set_ylabel('Average Latency')
+ax2.set_title('Average Latencies for Last Four Sets')
+ax2.set_xticks(x)
+ax2.set_xticklabels(labels)
+
+plt.tight_layout()
+plt.show()
